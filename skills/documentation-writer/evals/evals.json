@@ -1,0 +1,26 @@
+{
+  "skill_name": "documentation-writer",
+  "evals": [
+    {
+      "id": 1,
+      "name": "debounce-docs",
+      "prompt": "I just updated `c:/code/personal/common/src/utils/debounce.ts` — it now supports async functions and superseded calls resolve cleanly instead of being left pending. Can you add documentation for it? Also make sure there's an AGENTS.md for the utils directory if there isn't one.",
+      "expected_output": "TSDoc comment on the debounce function clearly explaining: async support, the superseded-call-resolves-cleanly ambiguity, param docs for func and timeout with defaults, return type meaning. AGENTS.md for common/src/utils/ covering what lives there.",
+      "files": ["c:/code/personal/common/src/utils/debounce.ts", "c:/code/personal/common/src/utils/index.ts"]
+    },
+    {
+      "id": 2,
+      "name": "socket-api-component-docs",
+      "prompt": "Can you add documentation for the SocketAPI component in the socket-api repo? It's the main entry point at `c:/code/personal/socket-api/src/client/SocketAPI.tsx`. Also check if the root README.md needs updating — the repo doesn't have one yet.",
+      "expected_output": "TSDoc on the Props interface documenting each prop especially the non-obvious ones (auth goes into socket.io handshake, autoConnect=true default, onPrf for WebAuthn PRF key derivation). Root README.md covering what socket-api is, what problem it solves, how to use it, the main props, and any gotchas.",
+      "files": ["c:/code/personal/socket-api/src/client/SocketAPI.tsx"]
+    },
+    {
+      "id": 3,
+      "name": "hooks-housekeeping",
+      "prompt": "Can you do a housekeeping docs pass on the react-ui hooks directory at `c:/code/personal/react-ui/src/hooks`? Make sure there's an AGENTS.md that gives a good overview of what hooks are available and when to use them, and check if the existing README.md there is accurate and complete.",
+      "expected_output": "AGENTS.md for react-ui/src/hooks/ covering the purpose of the hooks directory, a useful categorised summary of the hooks (not just a flat list), and cross-links. The existing README.md reviewed and updated if stale or incomplete.",
+      "files": ["c:/code/personal/react-ui/src/hooks/README.md"]
+    }
+  ]
+}
