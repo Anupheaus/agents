@@ -33,6 +33,18 @@ Always write temporary/scratch files (throwaway scripts, intermediate output, de
 
 ---
 
+## Git Worktrees
+
+**Always create worktrees in the repo's parent folder, as a sibling of the repo — not nested inside it.** For a repo at `c:/code/personal/<repo>`, place the worktree at `c:/code/personal/<repo>-<feature>` (e.g. `c:/code/personal/vision-public-quote-payment`).
+
+**Why:** These repos resolve `@anupheaus/*` imports to sibling source via tsconfig paths / vitest aliases (`../<repo>/src`). A worktree nested inside the repo (e.g. under `.claude/worktrees/`) breaks that `../<repo>` resolution, so `tsc`, tests, and lint can't see `common`, `react-ui`, `mxdb`, or `nexus`. A sibling worktree keeps `../common`, `../react-ui`, etc. resolving exactly as in the primary checkout.
+
+**How to apply:**
+- Do NOT use a native worktree tool that forces placement under `.claude/worktrees/`; use the git fallback with an explicit sibling path: `git worktree add c:/code/personal/<repo>-<feature> -b feature/<feature>`.
+- Follow the existing sibling naming convention (`vision-purchase-ordering`, `vision-subscription-window`, …).
+
+---
+
 ## Superpowers: Plan Execution
 
 After writing an implementation plan, always proceed directly with **Subagent-Driven execution** (option 1). Do not ask the user to choose — invoke `superpowers:subagent-driven-development` immediately.
