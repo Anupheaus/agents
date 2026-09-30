@@ -94,4 +94,4 @@ Key defaults:
 - **Encountering a bug or unexpected behaviour** → invoke `debugger` first
 - **Adding, changing, or deleting code** → invoke `documentation-writer` as part of the work
 
-All personal skill files should be written to `C:\code\personal\agents\skills\` and copied to `C:\Users\email\.claude\skills\`.
+All personal skill files should be written to `C:\code\personal\agents\skills\` and copied to `C:\Users\email\.claude\skills\`. A skill that only applies to one project lives in that repo's `.claude/skills/` instead (Vision's Shortcut skills are in `vision/.claude/skills/`) — see the catalog's "Project skills" section.

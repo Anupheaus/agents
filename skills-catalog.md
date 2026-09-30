@@ -62,6 +62,20 @@ Each skill has a `SKILL.md` (or `skill.md`) file that contains the full instruct
 
 ---
 
+## Project skills (kept in their own repo)
+
+Skills that only apply to one project live in that repo's `.claude/skills/`, so every session in the repo gets them and there is one copy to maintain. They are not copied here or into `~/.claude/skills`.
+
+**Vision** — [`vision/.claude/skills/`](../vision/.claude/skills/), for work in the `lintex-vision` Shortcut workspace (Shortcut is the spec):
+
+| Skill | Invoke when |
+|---|---|
+| `implementing-a-vision-epic` | Taking a whole Vision epic from nothing to a ready-to-merge pull request: one epic → one sibling worktree → one branch → one PR, story by story, ending in the hand-back report. |
+| `implementing-a-vision-ticket` | Implementing one Shortcut story (or working an epic's stories one at a time): failing test first, the project's non-negotiables, UI and error standards, the UX persona review, and the per-ticket done checklist. |
+| `refining-vision-work` | Refining, grooming, splitting or tidying a Vision epic or story, or when a ticket looks stale, vague, oversized or already done — always verified against the code on the branch that ships. |
+
+---
+
 ## Adding New Skills
 
 1. Create a new folder under `C:\code\personal\agents\skills\<skill-name>\`
