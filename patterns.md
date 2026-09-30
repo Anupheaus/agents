@@ -360,10 +360,7 @@ export const EntitySelector = createComponent('EntitySelector', ({
 - Lift the render helper into its own named component (same file, or a sibling) and pass its data in via props.
 - Pure, non-JSX helpers (`formatDimensions`, `getFulfilmentLabel`) stay as plain module-level functions — this rule is specifically about functions that return JSX.
 
-**Why:**
-- Each nested render function is re-created on every parent render and can't be memoised or tested in isolation.
-- **If a nested function is rendered as an element (`<Foo />`), React treats it as a new component type on every parent render and remounts it** — discarding its state, focus, text selection, and scroll position, and re-running its effects. This is the sharpest frontend failure mode: subtle, intermittent, and easy to misdiagnose.
-- A function returning JSX is a component in disguise — making it a real component gives it a name in the tree, its own render boundary, and a clear props contract.
+**Why:** a function that returns JSX is a component. Defined inside another component and rendered as `<Foo />`, React treats it as a new type on every parent render and **remounts** it — state, focus, selection, scroll, and effects reset. Lift it to a named component (same file or a sibling) and pass data as props. Pure non-JSX helpers (`formatDimensions`) stay module-level functions.
 
 ```tsx
 // ❌ Avoid — helper function inside the component

@@ -60,7 +60,7 @@
   - **REQUIRED — check `@anupheaus/react-ui` before writing any React code**: Read `../react-ui/agent.md` and search the library before building any component, hook, provider, dialog, form field, or UI primitive. Only build bespoke after confirming nothing fits.
 - **Separate layers**: No DB or network calls in UI components — use hooks/providers.
 - **Extract shared logic** only when it has a clear responsibility and is used in more than one place.
-- **Design for testability**: Pure functions for core business logic. Keep test-covered pure logic in files that import only lightweight deps (types, `@anupheaus/common`, `luxon`) — **not** ESM-only runtime packages such as `@anupheaus/mxdb/*`, which a CJS/ts-node test runner (ts-mocha) cannot load (`ERR_UNKNOWN_FILE_EXTENSION`). Extract the pure function into its own file rather than colocating it with an ESM-importing orchestrator.
+- **Design for testability**: Pure functions for core business logic. Keep that logic in a file that imports only lightweight deps (types, `@anupheaus/common`, `luxon`) — not the data layer (`@anupheaus/mxdb/*`) or an orchestrator that does. The split stays even where the test runner can load ESM: the pure file is what the unit test imports.
 
 ### Git and project hygiene
 
@@ -81,6 +81,5 @@
 
 ### Notes for AI agents
 
-- Follow existing patterns, tooling, and naming before introducing something new.
-- Check `@anupheaus/common` and `@anupheaus/react-ui` before writing utilities or components.
+- Follow existing patterns, tooling, and naming before introducing something new. Check `@anupheaus/common` and `@anupheaus/react-ui` first (the react-ui check above is required, not optional).
 - If a preference is ambiguous, make a reasonable choice and note it in the commit message or PR.
