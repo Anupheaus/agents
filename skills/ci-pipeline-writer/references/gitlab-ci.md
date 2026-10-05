@@ -161,13 +161,13 @@ rules:
 
 ```yaml
 include:
-  - remote: 'https://cdn.jsdelivr.net/gh/Anupheaus/ci-templates@v1/gitlab/base.yml'
+  - remote: 'https://cdn.jsdelivr.net/gh/Anupheaus/agents@v1/ci-templates/gitlab/base.yml'
 
 # Or for repos on the same GitLab instance:
 include:
-  - project: 'Anupheaus/ci-templates'
+  - project: 'Anupheaus/agents'
     ref: v1
-    file: '/gitlab/base.yml'
+    file: '/ci-templates/gitlab/base.yml'
 ```
 
 ---

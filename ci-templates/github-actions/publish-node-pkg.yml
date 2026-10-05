@@ -1,0 +1,116 @@
+# Template: publish-node-pkg.yml
+#
+# Copy to .github/workflows/publish.yml in your repo and fill in the
+# CONFIGURE sections. The shared pnpm-setup action lives in agents/ci-templates
+# and handles checkout + pnpm + node + cache + install for every job.
+#
+# Usage of the shared action:
+#   uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
+#
+# See ci-templates/actions/pnpm-setup/action.yml for all inputs.
+
+name: CI
+
+on:
+  push:
+    branches: [master]   # CONFIGURE: change to 'main' if needed
+  workflow_dispatch:
+
+env:
+  PNPM_VERSION: '10'     # CONFIGURE: match your repo's pnpm version
+  NODE_VERSION: '22'     # CONFIGURE: match your repo's node version
+
+jobs:
+  # ── PREPARE ─────────────────────────────────────────────────────────────────
+  Prepare:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          node-auth-token: ${{ secrets.GITHUB_TOKEN }}
+          # patch-package-json: 'true'   # uncomment if repo has local @anupheaus overrides
+
+  # ── VALIDATE ─────────────────────────────────────────────────────────────────
+  Validate:
+    needs: Prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          node-auth-token: ${{ secrets.GITHUB_TOKEN }}
+          install-args: '--no-frozen-lockfile'
+          # patch-package-json: 'true'
+
+      - name: Type check
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Security audit
+        run: pnpm audit --audit-level=high
+
+  # ── TEST ─────────────────────────────────────────────────────────────────────
+  Test:
+    needs: Prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          node-auth-token: ${{ secrets.GITHUB_TOKEN }}
+          install-args: '--no-frozen-lockfile'
+          # patch-package-json: 'true'
+
+      - name: Run tests
+        run: pnpm run test:ci   # CONFIGURE: match your test script name
+
+  # ── PUBLISH ──────────────────────────────────────────────────────────────────
+  Publish:
+    needs: [Validate, Test]
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'Anupheaus'
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          node-auth-token: ${{ secrets.GITHUB_TOKEN }}
+          install-args: '--no-frozen-lockfile'
+          fetch-depth: '0'          # needed for version bump action
+          # patch-package-json: 'true'
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Bump version
+        uses: phips28/gh-action-bump-version@master
+        with:
+          commit-message: 'CI: bumps version to {{version}} [skip ci]'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pack
+        run: pnpm pack
+
+      - name: Publish
+        run: pnpm publish $(ls *.tgz) --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

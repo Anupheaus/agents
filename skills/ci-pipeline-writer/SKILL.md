@@ -81,7 +81,7 @@ Run through every category. Record every item that fails. Items you cannot deter
 - [ ] License badge present (if LICENSE file exists)
 
 ### ci-templates DRY
-- [ ] pnpm setup steps use `Anupheaus/ci-templates/.github/actions/pnpm-setup@v1` (not inline)
+- [ ] pnpm setup steps use `Anupheaus/agents/ci-templates/actions/pnpm-setup@v1` (not inline)
 - [ ] No workflow pattern duplicated across repos that could live in ci-templates
 
 ---
@@ -289,7 +289,7 @@ All Anupheaus repos should use the shared config from `ci-templates`:
 
 ```js
 // .eslintrc.js — TypeScript repo
-const base = require('../../ci-templates/eslint/base');
+const base = require('../../agents/ci-templates/eslint/base');
 module.exports = {
   ...base,
   rules: {
@@ -299,7 +299,7 @@ module.exports = {
 };
 
 // .eslintrc.js — React repo
-const react = require('../../ci-templates/eslint/react');
+const react = require('../../agents/ci-templates/eslint/react');
 module.exports = { ...react, rules: { ...react.rules } };
 ```
 
@@ -362,10 +362,10 @@ Add `"jsx": "react-jsx"` and `"lib": ["ES2022", "DOM"]` for React libraries.
 
 ```json
 // tsconfig.json — Node.js library
-{ "extends": "../../ci-templates/tsconfig/node-library.json" }
+{ "extends": "../../agents/ci-templates/tsconfig/node-library.json" }
 
 // tsconfig.json — React library
-{ "extends": "../../ci-templates/tsconfig/react-library.json" }
+{ "extends": "../../agents/ci-templates/tsconfig/react-library.json" }
 ```
 
 ---
@@ -409,7 +409,7 @@ export default defineConfig({
 
 What this replaces: `ts-loader` (esbuild is 10-100x faster), `webpack-node-externals`, `TerserPlugin` (`minify: true`), `source-map-loader`, separate `tsc --emitDeclarationOnly` step.
 
-Shared tsup config: `import { createLibraryConfig } from '../../ci-templates/tsup/library';`
+Shared tsup config: `import { createLibraryConfig } from '../../agents/ci-templates/tsup/library';`
 
 ### Circular dependency detection without webpack
 
@@ -606,19 +606,19 @@ Thumbs.db
 
 | Finding | Severity | Why it matters |
 |---------|----------|----------------|
-| Checkout + pnpm + node + cache inline (not using `pnpm-setup` action) | 🟡 Medium | `Anupheaus/ci-templates/.github/actions/pnpm-setup@v1` does this in one line. Inline copies drift. |
+| Checkout + pnpm + node + cache inline (not using `pnpm-setup` action) | 🟡 Medium | `Anupheaus/agents/ci-templates/actions/pnpm-setup@v1` does this in one line. Inline copies drift. |
 | Workflow pattern duplicated across multiple repos | 🟡 Medium | Diverges independently. Template belongs in `ci-templates/github-actions/`. |
 
-Currently available in `ci-templates` (`github.com/Anupheaus/ci-templates`, cloned at `c:/code/personal/ci-templates`):
-- `.github/actions/pnpm-setup` — checkout + pnpm + node (GitHub Packages) + store cache + install. Inputs: `pnpm-version`, `node-version`, `install-args`, `node-auth-token`, `fetch-depth`, `patch-package-json`.
+Currently available in the `ci-templates/` folder of `github.com/Anupheaus/agents` (cloned at `c:/code/personal/agents/ci-templates`):
+- `actions/pnpm-setup` — checkout + pnpm + node (GitHub Packages) + store cache + install. Inputs: `pnpm-version`, `node-version`, `install-args`, `node-auth-token`, `fetch-depth`, `patch-package-json`.
 - `github-actions/publish-node-pkg.yml` — full 4-stage workflow template for Node.js packages published to GitHub Packages.
 - `eslint/base.js`, `eslint/react.js` — shared ESLint configs.
 - `tsconfig/base.json`, `tsconfig/node-library.json`, `tsconfig/react-library.json` — shared tsconfig bases.
 - `tsup/library.ts` — `createLibraryConfig()` factory.
 
 **To add something to ci-templates:**
-1. Create/update the file in `c:/code/personal/ci-templates/`
-2. `git commit`, `git push origin main`
+1. Create/update the file in `c:/code/personal/agents/ci-templates/`
+2. `git commit`, `git push origin master` (in the `agents` repo)
 3. `git tag -f v1 && git push origin v1 --force`
 
 See `references/global-config.md` for the full ci-templates reference.
@@ -651,7 +651,7 @@ chore(ci): add GitHub Actions pipeline, dependabot, and README badges
 
 Scope conventions: `chore(ci):` for pipeline/workflow changes, `chore(build):` for bundler/tsconfig/ESLint changes. If both, use two commits.
 
-**If ci-templates was modified:** commit and push ci-templates first, move the `v1` tag, then commit the consuming repo.
+**If ci-templates was modified:** commit and push the `agents` repo first, move its `v1` tag, then commit the consuming repo.
 
 ---
 

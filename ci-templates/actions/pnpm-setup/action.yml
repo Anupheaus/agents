@@ -1,0 +1,157 @@
+name: pnpm Setup
+description: Checkout, install pnpm, setup Node with GitHub Packages registry, restore pnpm store cache, and install dependencies.
+
+inputs:
+  pnpm-version:
+    description: pnpm version to install
+    required: false
+    default: '10'
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: '22'
+  install-args:
+    description: Extra arguments passed to pnpm install
+    required: false
+    default: '--frozen-lockfile'
+  node-auth-token:
+    description: Token for authenticating with npm.pkg.github.com
+    required: false
+    default: ''
+  fetch-depth:
+    description: Number of commits to fetch (0 = full history)
+    required: false
+    default: '1'
+  patch-package-json:
+    description: Remove pnpm.overrides entries for @anupheaus/* packages (needed for CI installs that bypass local workspace links)
+    required: false
+    default: 'false'
+  workspace-repos:
+    description: |
+      Space-separated list of GitHub org/repo pairs to clone into the parent directory of
+      GITHUB_WORKSPACE before running pnpm install. Use when file: overrides reference repos
+      that are not published to the npm registry. Repos must be publicly accessible.
+      Example: "Anupheaus/common Anupheaus/react-ui Anupheaus/nexus"
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: ${{ inputs.fetch-depth }}
+        token: ${{ inputs.node-auth-token || github.token }}
+
+    - uses: pnpm/action-setup@v3
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        registry-url: https://npm.pkg.github.com/
+        scope: '@anupheaus'
+
+    - name: Get pnpm store path
+      id: pnpm-store
+      shell: bash
+      run: echo "path=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+    - name: Restore pnpm store cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.pnpm-store.outputs.path }}
+        key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-${{ runner.os }}-
+
+    - name: Patch package.json (remove local workspace overrides)
+      if: inputs.patch-package-json == 'true'
+      shell: bash
+      run: |
+        node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const overrides = pkg?.pnpm?.overrides ?? {};
+          Object.keys(overrides).forEach(k => { if (k.startsWith('@anupheaus/')) delete overrides[k]; });
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+        "
+
+    - name: Clone, install, and build workspace repos
+      if: inputs.workspace-repos != ''
+      shell: bash
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.node-auth-token || github.token }}
+      run: |
+        set -e
+        PARENT_DIR="$(dirname "$GITHUB_WORKSPACE")"
+
+        # Clone or UPDATE all repos first, so file: cross-references resolve correctly.
+        #
+        # Updating matters: a self-hosted runner can have a persistent workspace, in which
+        # case the clone survives between runs. Skipping an existing directory then pins CI
+        # to whatever commit was first cloned, and it type-checks and tests against stale
+        # sibling source without any signal that it is doing so.
+        for repo in ${{ inputs.workspace-repos }}; do
+          name="${repo##*/}"
+          target="$PARENT_DIR/$name"
+          if [ -d "$target/.git" ]; then
+            echo "::group::Updating $repo"
+            git -C "$target" remote set-url origin "https://github.com/$repo.git"
+            # HEAD resolves to the remote's default branch, so this does not assume main/master.
+            git -C "$target" fetch --depth 1 origin HEAD
+            git -C "$target" reset --hard FETCH_HEAD
+            # Untracked strays only; node_modules and dist are gitignored so they survive.
+            git -C "$target" clean -fd
+            echo "::endgroup::"
+          else
+            echo "::group::Cloning $repo"
+            rm -rf "$target"
+            git clone --depth 1 "https://github.com/$repo.git" "$target"
+            echo "::endgroup::"
+          fi
+        done
+
+        # Install deps and build each repo in order (dependencies first), skipping any repo
+        # already installed and built at this exact commit. On a persistent workspace that is
+        # the common case, and this step is otherwise the bulk of the job's setup time.
+        for repo in ${{ inputs.workspace-repos }}; do
+          name="${repo##*/}"
+          target="$PARENT_DIR/$name"
+          sha="$(git -C "$target" rev-parse HEAD)"
+          # Kept beside the repo, not inside it, so `git clean` above cannot remove it.
+          stamp="$PARENT_DIR/.ci-workspace-built-$name"
+
+          # Build only when dist is gitignored — downstream repos and TypeScript exports
+          # resolution need built output, but a repo that commits dist already has it.
+          needs_dist=false
+          if tr -d '\r' < "$target/.gitignore" 2>/dev/null | grep -qE "^/?dist$"; then
+            needs_dist=true
+          fi
+
+          if [ "$(cat "$stamp" 2>/dev/null || true)" = "$sha" ] \
+             && [ -d "$target/node_modules" ] \
+             && { [ "$needs_dist" = false ] || [ -d "$target/dist" ]; }; then
+            echo "$name is already installed and built at $sha — skipping"
+            continue
+          fi
+
+          echo "::group::Installing $name"
+          ( cd "$target" && pnpm install --no-frozen-lockfile )
+          echo "::endgroup::"
+
+          if [ "$needs_dist" = true ]; then
+            echo "::group::Building $name"
+            ( cd "$target" && pnpm build ) || echo "Build failed (non-fatal)"
+            echo "::endgroup::"
+          fi
+
+          # Stamped last: a failed install or build leaves no stamp, so the next run retries.
+          printf '%s' "$sha" > "$stamp"
+        done
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install ${{ inputs.install-args }} --prefer-offline
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.node-auth-token || github.token }}

@@ -24,7 +24,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: Anupheaus/ci-templates/.github/actions/pnpm-setup@v1
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
         with:
           pnpm-version: ${{ env.PNPM_VERSION }}
           node-version: ${{ env.NODE_VERSION }}
@@ -38,7 +38,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: Anupheaus/ci-templates/.github/actions/pnpm-setup@v1
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
         with:
           pnpm-version: ${{ env.PNPM_VERSION }}
           node-version: ${{ env.NODE_VERSION }}
@@ -56,7 +56,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: Anupheaus/ci-templates/.github/actions/pnpm-setup@v1
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
         with:
           pnpm-version: ${{ env.PNPM_VERSION }}
           node-version: ${{ env.NODE_VERSION }}
@@ -73,7 +73,7 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: Anupheaus/ci-templates/.github/actions/pnpm-setup@v1
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
         with:
           pnpm-version: ${{ env.PNPM_VERSION }}
           node-version: ${{ env.NODE_VERSION }}
@@ -101,7 +101,7 @@ If the repo has `pnpm.overrides` pointing to local workspace paths, add `patch-p
 ```yaml
   Prepare:
     steps:
-      - uses: Anupheaus/ci-templates/.github/actions/pnpm-setup@v1
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
         with:
           patch-package-json: 'true'
           install-args: '--no-frozen-lockfile'
@@ -118,7 +118,7 @@ If the repo has `pnpm.overrides` pointing to local workspace paths, add `patch-p
       - uses: actions/download-artifact@v4
         with:
           name: package-json
-      - uses: Anupheaus/ci-templates/.github/actions/pnpm-setup@v1
+      - uses: Anupheaus/agents/ci-templates/actions/pnpm-setup@v1
         with:
           install-args: '--no-frozen-lockfile'
           node-auth-token: ${{ secrets.GITHUB_TOKEN }}
