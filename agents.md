@@ -70,16 +70,14 @@ Key points (these do not replace reading the full docs):
 
 ---
 
-## Logging and New Relic
+## Logging
 
 **Applies to repos that use `Logger` from `@anupheaus/common`** (personal stack: `common`, `react-ui`, `mxdb`, `nexus`, `vision`).
 
 | User says | Do this |
 |-----------|---------|
-| **"Look through the logs"** / **"read the logs"** | Query **New Relic** via MCP (`nrql`, `getLogs`) — not terminal, browser console, or local log files |
+| **"Look through the logs"** / **"read the logs"** | Query the project's log aggregation service via its MCP server — not terminal, browser console, or local log files |
 | **"Add more logging"** | Add permanent **`Logger`** calls (`info`, `debug`, `silly`, `warn`, …) with useful `meta` — not temporary `console.log`. More logging = easier debugging |
-
-New Relic MCP credentials: `C:\Users\email\.cursor\local-secrets\newrelic.json` (see also global Cursor rule `logging-and-new-relic`).
 
 ---
 
