@@ -2,12 +2,12 @@
 
 > Repo-wide agent rules: read AGENTS.md and the standards, sibling worktrees, temp files, logging and which skills to run.
 >
-> Status: accepted · Version 1
+> Status: accepted · Version 2
 
 ## Read first
 
 - Read the repo's `AGENTS.md` before changing anything — not `CLAUDE.md`. If it is missing, ask the user to create one.
-- Read the coding standards and patterns before writing code: `coding-standards.md` and `patterns.md` in this repo, mirrored under `docs/standards/` and `docs/patterns/`.
+- Read the cross-repo coding standards and patterns before writing code. Their canonical home is this repo's [standards](../standards/index.md) and [patterns](../patterns/index.md) folders; every repo's `AGENTS.md` should link there, not to files in the `agents` repo root. Read only the docs your task touches.
 
 ## Repos
 
