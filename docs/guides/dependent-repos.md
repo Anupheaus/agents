@@ -1,22 +1,16 @@
 # Reading dependent repos' docs
 
-> Which repo depends on which, and the rule that a task reads the docs of every repo it depends on.
+> The rule that a task reads the docs of every repo it depends on, and where that dependency list lives.
 >
-> Status: accepted · Version 1
+> Status: accepted · Version 2
 
 ## The rule
 
 Before changing code in a repo, read that repo's `AGENTS.md` and its own `docs/`, then the docs of every repo it depends on. The library you call is the contract you must not break, so its docs are required reading. Nothing flows the other way: a lower repo never reads its consumers.
 
-## Who depends on whom
+## Where the dependency list lives
 
-| Repo | Depends on |
-|---|---|
-| `common` | nothing |
-| `react-ui` | `common` |
-| `nexus` | `common`, `react-ui` |
-| `mxdb` | `common`, `react-ui` |
-| `vision` | `common`, `react-ui`, `nexus`, `mxdb` |
+Each repo states its own dependencies in its overview doc, `docs/guides/repo-overview.md` — so `common`, `react-ui`, `nexus`, `mxdb` and `vision` each carry their own line. Do not keep a second master list here; it drifts.
 
 ## How it is wired
 

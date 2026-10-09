@@ -2,29 +2,26 @@
 
 > Repo-wide agent rules: read AGENTS.md, the standards and dependency docs, sibling worktrees, temp files and skills.
 >
-> Status: accepted · Version 3
+> Status: accepted · Version 4
 
 ## Read first
 
 - Read the repo's `AGENTS.md` before changing anything — not `CLAUDE.md`. If it is missing, ask the user to create one.
-- Read the cross-repo coding standards and patterns before writing code. Their canonical home is this repo's [standards](../standards/index.md) and [patterns](../patterns/index.md) folders; every repo's `AGENTS.md` should link there, not to files in the `agents` repo root. Read only the docs your task touches.
+- Read this repo's [standards](../standards/index.md) and [patterns](../patterns/index.md) before writing code. Every repo's `AGENTS.md` links there, not to files in the `agents` repo root. Read only the docs your task touches.
 - Then read the docs of the repos your repo depends on — see [reading dependent repos' docs](dependent-repos.md).
-
-## Repos
-
-Personal repos live at `c:/code/personal/`: `common`, `react-ui`, `mxdb`, `nexus`, `vision`. Touch nothing else there. See [repos and relationships](repos-and-relationships.md).
-
-## Worktrees
-
-Create worktrees as a sibling of the repo, never nested inside it: `c:/code/personal/<repo>-<feature>`. These repos resolve `@anupheaus/*` to sibling source via tsconfig paths, so a nested worktree breaks `tsc`, lint and tests.
+- Where a rule describes one repo, one library or one local tool, it belongs in the repo that owns that thing, not here.
 
 ## Temp files
 
 Write scratch files under the Windows temp directory (`%TEMP%`) in a per-task subfolder — never into a repo, and never into a `tmp/` folder inside one.
 
+## Personal stack
+
+Folder layout, sibling worktrees and sibling-source resolution apply to this personal stack only, never to every repo: see [personal-stack layout](personal-stack-layout.md).
+
 ## Logging
 
-Logging rules live with the logger, not here: see the logging guide in the `common` repo (`common/docs/guides/logging.md`) for adding logs. The log aggregation service and its MCP tooling belong to the repo that runs them, so this repo no longer describes them.
+Logging rules live with the logger: see the logging guide in the `common` repo. The log aggregation service and its MCP tooling belong to the application that runs them, and Vision documents its own.
 
 ## Skills
 
