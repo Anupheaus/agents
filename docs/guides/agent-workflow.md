@@ -1,13 +1,14 @@
 # Agent workflow rules
 
-> Repo-wide agent rules: read AGENTS.md and the standards, sibling worktrees, temp files, logging and which skills to run.
+> Repo-wide agent rules: read AGENTS.md, the standards and dependency docs, sibling worktrees, temp files and skills.
 >
-> Status: accepted · Version 2
+> Status: accepted · Version 3
 
 ## Read first
 
 - Read the repo's `AGENTS.md` before changing anything — not `CLAUDE.md`. If it is missing, ask the user to create one.
 - Read the cross-repo coding standards and patterns before writing code. Their canonical home is this repo's [standards](../standards/index.md) and [patterns](../patterns/index.md) folders; every repo's `AGENTS.md` should link there, not to files in the `agents` repo root. Read only the docs your task touches.
+- Then read the docs of the repos your repo depends on — see [reading dependent repos' docs](dependent-repos.md).
 
 ## Repos
 
@@ -23,7 +24,7 @@ Write scratch files under the Windows temp directory (`%TEMP%`) in a per-task su
 
 ## Logging
 
-"Look through the logs" means query the project's log aggregation MCP server, not the terminal or local files. "Add more logging" means permanent `Logger` calls from `@anupheaus/common` with useful `meta`, not temporary `console.log`.
+Logging rules live with the logger, not here: see the logging guide in the `common` repo (`common/docs/guides/logging.md`) for adding logs. The log aggregation service and its MCP tooling belong to the repo that runs them, so this repo no longer describes them.
 
 ## Skills
 
