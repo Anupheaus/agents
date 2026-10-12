@@ -81,6 +81,33 @@ Key points (these do not replace reading the full docs):
 
 ---
 
+## Forge's database (where its projects, epics and tickets live)
+
+The MongoDB MCP server is connected to a *local* MongoDB (`vision`, `vision-2`, … are the Vision app's own data). **Forge's data is not there.** It is in MongoDB Atlas, reached by the Forge service Worker (`forge/worker`, `POST /v1/db`).
+
+- **Connection:** `MONGODB_URI` in `c:/code/personal/forge/worker/.dev.vars` (Atlas `Cluster0`). It holds a password: read it from the file inside a script, never print it or paste it into chat or a doc.
+- **Database:** one per customer, named `customer_<id>` (currently `customer_ec245615835a42f7`; the name is the `db_name` column of the Worker's `customers` table). List the databases to find it.
+- **Collections:** `projects` (`vision` = Vision, key `VIS`; `ledger` = Ledger, key `LED`), then per project `p.<project>.<name>`: `tickets`, `epics`, `meta` (`nextTicket` is the next ticket number), `docs`, `docVersions`, `messages`, `statuses`, `pullRequests`, `ciRuns`, `memories`. Shapes are in `forge/shared/domain.ts` (`Ticket`, `Epic`); `forge/server/src/store.ts` is the only code that reads and writes them.
+- **How to reach it:** a small Node script in the temp folder, using `createRequire('C:/code/personal/forge/worker/package.json')` to load `mongodb`, with the URI read from `.dev.vars`. Look (read-only) before writing, and keep tickets consistent with `store.createTicket` (claim a number in `meta.nextTicket`, `_id` equal to `id`, e.g. `VIS-1`).
+- Forge normally creates tickets itself (the Product Owner agent via `edit_board`); writing to the database directly is for seeding or testing, and only when the user asks.
+
+---
+
+## Shortcut (Vision's tickets)
+
+Vision's tickets, epics and their states live in **Shortcut**, not in Forge's database and not in the local MongoDB. Workspace `lintex-vision` (`https://app.shortcut.com/lintex-vision`). The story and epic bodies, comments and acceptance criteria there are the source of truth to compare a Forge ticket against.
+
+- **Best path: the Shortcut MCP.** It is already configured for Vision: `vision/.mcp.json` runs `npx -y @shortcut/mcp@latest` with `SHORTCUT_API_TOKEN`, and `~/.claude.json` also registers it as an HTTP MCP at `https://mcp.shortcut.com/mcp`. Use its tools when the host exposes them.
+- **No Shortcut MCP tools (e.g. in Kilo): call the HTTP MCP directly.** Auth is OAuth, *not* a static API token, so do not hunt for a `SHORTCUT_API_TOKEN` in the shell.
+  1. Tokens are in `C:\Users\email\.claude\.credentials.json` under the `mcpOAuth` key whose name starts `shortcut|` (`accessToken`, `refreshToken`, `expiresAt`). The access token lasts **30 minutes**.
+  2. If it is expired (`WWW-Authenticate: … invalid_token … The access token expired`), refresh it: `POST https://api.app.shortcut.com/oauth-authorization-code-flow/token`, form-encoded, with `grant_type=refresh_token`, `refresh_token=<refreshToken>`, `client_id=https://claude.ai/oauth/claude-code-client-metadata`. **The refresh token rotates**, so write the new `accessToken` and `refreshToken` (and `expiresAt`) back to `.credentials.json` or the user's Claude session breaks.
+  3. Call the MCP: `POST https://mcp.shortcut.com/mcp` with `Authorization: Bearer <accessToken>`, `Accept: application/json, text/event-stream`, `Content-Type: application/json`. Send `initialize` first, keep the `mcp-session-id` response header, POST `notifications/initialized`, then `tools/call`. Responses are SSE: read the `data: {…}` line. `curl -s -D -` is enough; only `initialize` needs to be a real session, and every call in the session carries the `mcp-session-id` header.
+- **Tools and arguments that matter:** `stories-search` (`query`), `stories-get-by-id` (`storyPublicId`, a number), `epics-get-by-id`; a story id is the number in `…/story/<id>`. List stories first, then fetch the one you want in full.
+- **Vision's own agents** (`vision/.claude/skills/vision-orchestrator/`) read Shortcut states through `SHORTCUT_API_TOKEN` in the environment; that token is for those scripts, not for the MCP.
+- Never print tokens, paste them into chat, or commit them.
+
+---
+
 ## Personal Skills
 
 Before invoking any skill, check `[skills-catalog.md](./skills-catalog.md)` for the full list of available personal skills, their trigger conditions, and what each one does. Skill files live in `C:\code\personal\agents\skills\`.
